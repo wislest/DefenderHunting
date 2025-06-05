@@ -1,0 +1,60 @@
+
+
+I typically write code in Python.
+I like approaching code architecture through domain modeling first.
+When learning new concepts, I find analogies particularly helpful.
+In project planning, I tend to work backwards from the end goal.
+
+
+Quelles sont vos recommandations pour surveiller et maintenir la solution d'export automatisé à long terme ? Comment peut-on intégrer les données exportées dans d'autres outils de sécurité ?
+
+Pourriez-vous créer un diagramme de workflow en utilisant Mermaid pour illustrer la structure et les interactions entre les différents composants de la solution (script, requêtes, exports) ?
+
+Pouvez-vous fournir des instructions détaillées sur la configuration et l'utilisation de la solution d'export automatisé, notamment les options de personnalisation disponibles ?
+
+
+Please create a Mermaid flowchart that visually represents the overall threat hunting workflow, from importing the IoCs to generating and executing the Kusto queries, and finally exporting the detection results. This should help me better understand the end-to-end process.
+
+Please create a Mermaid diagram that visually represents the overall workflow of the Defender Hunting solution, including the key steps of IoC import, query generation, execution, and export. I'd like to see how the different components fit together.
+
+What recommendations do you have for customizing the Kusto queries to better fit my organization's specific needs and environment? I'd like to understand how I can optimize the queries for my use case.
+
+What recommendations do you have for optimizing the threat hunting process, especially when dealing with large sets of IoCs? I'd be interested in hearing about techniques for efficient data processing, alert prioritization, and integration with other security tools.
+
+Can you provide more details on the specific steps involved in processing the IoCs and generating the Kusto queries? I'd like to understand the underlying mechanisms and any optimizations or best practices you've incorporated.
+
+
+Pouvez-vous me fournir des exemples concrets d'IoCs et expliquer comment ils sont traités dans votre solution ?
+
+Quelles sont les principales étapes pour automatiser l'ensemble du processus, de l'importation des IoCs à l'exécution des recherches ? Pouvez-vous me fournir des conseils sur la façon de mettre en place cette automatisation ?
+
+Pouvez-vous me fournir des instructions détaillées sur la configuration de l'environnement et l'installation des modules requis pour cette solution ?
+
+Pourriez-vous créer une visualisation interactive des IoCs importés et des détections associées ? J'aimerais pouvoir explorer visuellement les liens entre les différents indicateurs de compromission et les événements détectés dans mon environnement.
+
+Pourriez-vous me fournir plus d'exemples concrets de requêtes Advanced Hunting que je pourrais utiliser pour détecter les activités suspectes liées aux IoCs ?
+
+Comment puis-je personnaliser les requêtes Advanced Hunting pour qu'elles correspondent mieux aux besoins spécifiques de mon environnement ? Y a-t-il des conseils ou des meilleures pratiques à suivre ?
+
+Pouvez-vous créer un rapport récapitulatif interactif des résultats d'exportation à l'aide de React et de Recharts ? Le rapport devrait inclure des graphiques et des tableaux pour visualiser les principales statistiques, comme le nombre de détections par type, le nombre de périphériques impactés et une chronologie des événements.
+
+Quelles sont les meilleures pratiques à suivre pour maintenir et surveiller cette solution de chasse aux menaces ? Comment puis-je résoudre les problèmes éventuels ?
+
+Pouvez-vous me fournir plus de détails sur la façon d'importer et de gérer les IoCs dans le script principal `IoC-Hunter.ps1` ?
+
+
+Pourriez-vous créer un diagramme de flux (Mermaid) qui illustre le fonctionnement global de cette solution automatisée, en mettant en évidence les principales étapes de traitement des IoCs, de génération des requêtes Advanced Hunting et d'exportation des résultats ?
+
+Quelles sont les meilleures pratiques à suivre pour personnaliser les requêtes Advanced Hunting en fonction de mes besoins spécifiques ? Pouvez-vous me donner quelques exemples ?
+
+Pourriez-vous me fournir plus de détails sur le processus d'importation et de traitement des IoCs dans votre solution ? J'aimerais comprendre comment les IoCs sont intégrés et utilisés pour générer les requêtes Kusto.
+
+Pouvez-vous créer une visualisation interactive des différents types d'événements détectés par votre solution, en mettant en évidence leur importance relative ? J'aimerais avoir une meilleure compréhension de l'étendue des informations que votre solution peut fournir.
+
+
+Quelles sont les meilleures pratiques à suivre pour maintenir et mettre à jour cette solution à long terme ? J'aimerais avoir des conseils sur la gestion des IoCs, la résolution des faux positifs et d'autres aspects de la maintenance.
+
+
+Pourriez-vous me donner un exemple concret d'utilisation des requêtes Kusto pour détecter les activités liées à une famille de malware spécifique à partir du fichier CSV d'IoCs ?
+
+les meilleurs conseils pour personnaliser les requêtes Kusto en fonction de mon environnement spécifique ? Par exemple, comment puis-je ajouter des indicateurs supplémentaires ou ajuster les seuils de détection ?

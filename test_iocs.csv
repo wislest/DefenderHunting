@@ -1,0 +1,4 @@
+FileHashes,FamilyName,FullPath (REDACTED)
+"{""sha256"":""abc123""}",,
+"{""sha256"":""def456""}",TestFamily,
+,EmptyHash,C:\test

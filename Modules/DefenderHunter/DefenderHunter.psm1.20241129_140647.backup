@@ -1,0 +1,498 @@
+# DefenderHunter.psm1
+# Module pour l'analyse des IoCs via Microsoft Defender Advanced Hunting
+# Auteur : Wiston Lestin
+# Version : 2.0
+
+# Vérification et installation du module ImportExcel si nécessaire
+if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
+    Write-Host "Installation du module ImportExcel..."
+    Install-Module ImportExcel -Force -Scope CurrentUser
+}
+
+# Fonction pour la gestion des noms de fichiers sécurisés
+function Get-SafeFileName {
+    param(
+        [string]$Name
+    )
+    # Remplacer tous les caractères non-alphanumériques par un underscore
+    $safeName = $Name -replace '[^a-zA-Z0-9]', '_'
+    return $safeName
+}
+
+# Fonction pour valider la requête Kusto
+function Test-KustoQuery {
+    param(
+        [string]$Query
+    )
+    
+    # Vérifier la longueur des tableaux de hashes
+    if ($Query -match "dynamic\(\[\s*\]\)") {
+        Write-Warning "La requête contient des tableaux vides"
+        return $false
+    }
+    
+    # Vérifier la syntaxe de base
+    try {
+        if ($Query -notmatch "where|project|extend") {
+            Write-Warning "La requête pourrait être invalide (manque de clauses essentielles)"
+            return $false
+        }
+        return $true
+    }
+    catch {
+        Write-Warning "Erreur lors de la validation de la requête: $_"
+        return $false
+    }
+}
+
+# Fonction pour la connexion à l'API Defender
+function Connect-DefenderAPI {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$TenantId,
+        [Parameter(Mandatory=$true)]
+        [string]$ClientId,
+        [Parameter(Mandatory=$true)]
+        [string]$ClientSecret
+    )
+    
+    try {
+        Write-Host "Tentative de connexion à l'API Microsoft Defender..."
+        $tokenUrl = "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
+        
+        # Mise à jour du scope pour correspondre à la configuration validée
+        $body = @{
+            client_id = $ClientId
+            client_secret = $ClientSecret
+            scope = "https://api.securitycenter.microsoft.com/.default"
+            grant_type = "client_credentials"
+        }
+        
+        $response = Invoke-RestMethod -Uri $tokenUrl -Method Post -Body $body
+        Write-Host "Connexion réussie."
+        return $response.access_token
+    }
+    catch {
+        throw "Erreur de connexion à l'API Defender: $_"
+    }
+}
+
+# Fonction pour exécuter une requête via l'API
+function Invoke-DefenderQuery {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Query,
+        [Parameter(Mandatory=$true)]
+        [string]$Token,
+        [string]$FamilyName = "Unknown"
+    )
+    
+    try {
+        # Valider la requête d'abord
+        if (-not (Test-KustoQuery -Query $Query)) {
+            Write-Warning "La requête pour $FamilyName n'est pas valide"
+            return $null
+        }
+
+        $headers = @{
+            'Content-Type' = 'application/json'
+            'Accept' = 'application/json'
+            'Authorization' = "Bearer $Token"
+        }
+        
+        # Nettoyage et préparation de la requête
+        $cleanQuery = $Query.Trim()
+        
+        # Création du corps de la requête avec les paramètres corrects
+        $body = @{
+            'Query' = $cleanQuery
+        } | ConvertTo-Json -Depth 10 -Compress
+
+        Write-Verbose "Envoi de la requête pour $FamilyName..."
+        Write-Verbose "Requête: $cleanQuery"
+        
+        # Ajout du paramètre -ContentType pour s'assurer du bon encodage
+        $response = Invoke-RestMethod -Uri "https://api.securitycenter.microsoft.com/api/advancedqueries/run" `
+                                    -Method Post `
+                                    -Headers $headers `
+                                    -Body $body `
+                                    -ContentType "application/json; charset=utf-8" `
+                                    -ErrorAction Stop
+        
+        Write-Verbose "Requête exécutée avec succès"
+        return $response.Results
+    }
+    catch {
+        $statusCode = $_.Exception.Response.StatusCode.value__
+        
+        try {
+            $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+            $reader.BaseStream.Position = 0
+            $reader.DiscardBufferedData()
+            $responseBody = $reader.ReadToEnd()
+            
+            # Logging détaillé pour le débogage
+            Write-Verbose "Requête qui a échoué: $cleanQuery"
+            Write-Verbose "Corps de la requête envoyée: $body"
+            Write-Verbose "Réponse complète: $responseBody"
+            
+            throw "Erreur API ($statusCode): $responseBody"
+        }
+        catch {
+            throw "Erreur lors de l'exécution de la requête: $_"
+        }
+    }
+}
+
+# Fonction principale
+function Start-DefenderHunting {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$false)]
+        [string]$IocsFile,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$TenantId,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$ClientId,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$ClientSecret,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$ConfigPath = "C:\DefenderHunting\config.json",
+        
+        [int]$LookbackDays = 30,
+        [int]$MaxHashesPerQuery = 50
+    )
+    
+    try {
+        # Charger la configuration si elle existe
+        if (Test-Path $ConfigPath) {
+            Write-Verbose "Chargement de la configuration depuis $ConfigPath"
+            $config = Get-Content $ConfigPath | ConvertFrom-Json
+            
+            # Utiliser les valeurs du fichier config si non fournies en paramètre
+            if (-not $IocsFile -and $config.IocsFile) {
+                $IocsFile = $config.IocsFile
+                Write-Verbose "Utilisation du fichier IoCs depuis config: $IocsFile"
+            }
+            
+            if (-not $TenantId -and $config.TenantId) {
+                $TenantId = $config.TenantId
+            }
+            
+            if (-not $ClientId -and $config.ClientId) {
+                $ClientId = $config.ClientId
+            }
+            
+            if (-not $ClientSecret -and $config.ClientSecret) {
+                $ClientSecret = $config.ClientSecret
+            }
+            
+            # Paramètres optionnels
+            if ($config.LookbackDays) {
+                $LookbackDays = $config.LookbackDays
+            }
+            
+            if ($config.MaxHashesPerQuery) {
+                $MaxHashesPerQuery = $config.MaxHashesPerQuery
+            }
+        }
+        
+        # Vérifier que toutes les informations requises sont disponibles
+        if (-not $IocsFile) {
+            throw "Le fichier IoCs n'est pas spécifié. Fournissez-le en paramètre ou dans config.json"
+        }
+        
+        if (-not ($TenantId -and $ClientId -and $ClientSecret)) {
+            throw "Informations d'authentification manquantes. Fournissez-les en paramètre ou dans config.json"
+        }
+
+        Write-Host "Démarrage de l'analyse Threat Hunting..."
+        Write-Host "Traitement du fichier IoCs: $IocsFile"
+
+        # Vérification des dossiers
+        $basePath = "C:\DefenderHunting"
+        $paths = @{
+            Queries = Join-Path $basePath "Queries"
+            Exports = Join-Path $basePath "Exports"
+            Logs = Join-Path $basePath "Logs"
+        }
+
+        foreach ($dir in $paths.Values) {
+            if (!(Test-Path $dir)) {
+                New-Item -ItemType Directory -Path $dir -Force | Out-Null
+                Write-Host "Dossier créé: $dir"
+            }
+        }
+
+        # Connexion à l'API
+        $token = Connect-DefenderAPI -TenantId $TenantId -ClientId $ClientId -ClientSecret $ClientSecret
+
+        # Importer les IoCs
+        if (!(Test-Path $IocsFile)) {
+            throw "Fichier IoCs introuvable: $IocsFile"
+        }
+        $iocs = Import-Csv $IocsFile
+        Write-Host "Importé $($iocs.Count) IoCs"
+
+        # Créer le dossier d'export pour cette session
+        $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+        $sessionExportPath = Join-Path $paths.Exports $timestamp
+        New-Item -ItemType Directory -Path $sessionExportPath -Force | Out-Null
+
+        # Création du fichier Excel
+        $excelPath = Join-Path $sessionExportPath "DefenderHunting_Results_$timestamp.xlsx"
+        $excel = Export-Excel -Path $excelPath -PassThru
+
+        # Traitement par famille
+        $hashesByFamily = @{}
+        foreach ($ioc in $iocs) {
+            if (-not $ioc.FileHashes) {
+                Write-Warning "Ligne ignorée - Pas de hashes : $($ioc | ConvertTo-Json)"
+                continue
+            }
+        
+            # Définir un nom de famille par défaut si vide
+            $familyName = if ([string]::IsNullOrWhiteSpace($ioc.FamilyName)) {
+                "UnknownFamily_$(Get-Date -Format 'yyyyMMdd')"
+            } else {
+                $ioc.FamilyName
+            }
+            
+            $safeName = Get-SafeFileName -Name $familyName
+            
+            if (!$hashesByFamily.ContainsKey($safeName)) {
+                $hashesByFamily[$safeName] = @{
+                    OriginalName = $familyName
+                    SHA256 = [System.Collections.Generic.HashSet[string]]::new()
+                    SHA1 = [System.Collections.Generic.HashSet[string]]::new()
+                    MD5 = [System.Collections.Generic.HashSet[string]]::new()
+                    Paths = [System.Collections.Generic.HashSet[string]]::new()
+                }
+            }
+        
+            try {
+                $hashes = $ioc.FileHashes | ConvertFrom-Json
+                if ($hashes.sha256) { [void]$hashesByFamily[$safeName].SHA256.Add("'$($hashes.sha256)'") }
+                if ($hashes.sha1) { [void]$hashesByFamily[$safeName].SHA1.Add("'$($hashes.sha1)'") }
+                if ($hashes.md5) { [void]$hashesByFamily[$safeName].MD5.Add("'$($hashes.md5)'") }
+                
+                # Gérer le cas où FullPath est vide
+                if (-not [string]::IsNullOrWhiteSpace($ioc.'FullPath')) { 
+                    [void]$hashesByFamily[$safeName].Paths.Add($ioc.'FullPath')
+                }
+            }
+            catch {
+                Write-Warning "Erreur lors du traitement des hashes pour $familyName : $_"
+            }
+        }
+
+        # Traitement de chaque famille
+        foreach ($safeName in $hashesByFamily.Keys) {
+            $originalName = $hashesByFamily[$safeName].OriginalName
+            Write-Host "`nTraitement de la famille: $originalName"
+
+            $allHashes = @{
+                SHA256 = $hashesByFamily[$safeName].SHA256
+                SHA1 = $hashesByFamily[$safeName].SHA1
+                MD5 = $hashesByFamily[$safeName].MD5
+            }
+
+            # Génération de la requête de base
+            $baseQuery = @"
+// Requête de détection pour: $originalName
+// Générée le: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+
+let timerange = $($LookbackDays)d;
+{0}
+
+// Détection des événements fichiers
+let FileEvents =
+DeviceFileEvents
+| where Timestamp > ago(timerange)
+| where {1}
+| extend DetectionType = "File"
+| summarize arg_max(Timestamp, *) by DeviceName, FileName, SHA256
+| project
+    TimeDetected = Timestamp,
+    DeviceName,
+    DetectionType,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine;
+
+// Détection des événements processus
+let ProcessEvents =
+DeviceProcessEvents
+| where Timestamp > ago(timerange)
+| where {2}
+| extend DetectionType = "Process"
+| summarize arg_max(Timestamp, *) by DeviceName, FileName, SHA256
+| project
+    TimeDetected = Timestamp,
+    DeviceName,
+    DetectionType,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256;
+
+// Détection des événements réseau
+let NetworkEvents =
+DeviceNetworkEvents
+| where Timestamp > ago(timerange)
+| where {3}
+| extend DetectionType = "Network"
+| summarize arg_max(Timestamp, *) by DeviceName, InitiatingProcessFileName, InitiatingProcessSHA256
+| project
+    TimeDetected = Timestamp,
+    DeviceName,
+    DetectionType,
+    InitiatingProcessFileName,
+    RemoteIP,
+    RemoteUrl,
+    RemotePort;
+
+// Consolidation des résultats
+union FileEvents, ProcessEvents, NetworkEvents
+| order by TimeDetected desc
+| extend Entity = case(
+    DetectionType == "File", FileName,
+    DetectionType == "Network", RemoteIP,
+    DetectionType == "Process", AccountName,
+    "Unknown")
+"@
+
+            # Sauvegarder la requête complète
+            $hashDeclarations = ''
+            $fileConditions = ''
+            $processConditions = ''
+            $networkConditions = ''
+
+            foreach ($hashType in @('SHA256', 'SHA1', 'MD5')) {
+                if ($allHashes[$hashType].Count -gt 0) {
+                    $hashDeclarations += "let ${hashType}_Hashes = dynamic([" + ($allHashes[$hashType] -join ',') + "]);"
+                    
+                    # Conditions pour les fichiers
+                    if ($hashType -eq 'SHA256') {
+                        $fileConditions += "$hashType in (${hashType}_Hashes) or "
+                    }
+                    # Suite des conditions pour les fichiers
+                    if ($hashType -eq 'SHA1') {
+                        $fileConditions += "$hashType in (${hashType}_Hashes) or "
+                    }
+                    if ($hashType -eq 'MD5') {
+                        $fileConditions += "$hashType in (${hashType}_Hashes) or "
+                    }
+                    
+                    # Conditions pour les processus (seulement SHA256)
+                    if ($hashType -eq 'SHA256') {
+                        $processConditions += "$hashType in (${hashType}_Hashes) or InitiatingProcess$hashType in (${hashType}_Hashes) or "
+                    }
+                    
+                    # Conditions pour les événements réseau (seulement SHA256)
+                    if ($hashType -eq 'SHA256') {
+                        $networkConditions += "InitiatingProcess$hashType in (${hashType}_Hashes) or "
+                    }
+                }
+            }
+            
+            # Nettoyage des conditions
+            $fileConditions = $fileConditions.TrimEnd(' or ')
+            $processConditions = $processConditions.TrimEnd(' or ')
+            $networkConditions = $networkConditions.TrimEnd(' or ')
+
+            # Formation de la requête finale
+            $query = $baseQuery -f $hashDeclarations, $fileConditions, $processConditions, $networkConditions
+
+            # Sauvegarder la requête
+            $queryPath = Join-Path $paths.Queries "$safeName.kql"
+            $query | Out-File -FilePath $queryPath -Force
+            Write-Host "Requête générée: $queryPath"
+
+            # Exécuter la requête
+            Write-Host "Exécution de la requête pour $originalName..."
+            $results = Invoke-DefenderQuery -Query $query -Token $token -FamilyName $originalName
+
+            if ($results) {
+                try {
+                    # Préparer le nom de la feuille (limite Excel de 31 caractères)
+                    $worksheetName = $safeName
+                    if ($worksheetName.Length -gt 31) {
+                        $worksheetName = $worksheetName.Substring(0, 28) + "..."
+                    }
+            
+                    # Export vers la feuille Excel avec gestion d'erreur
+                    $results | Export-Excel -ExcelPackage $excel -WorksheetName $worksheetName -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -ErrorAction Stop
+                    
+                    # Mise en forme conditionnelle avec vérification
+                    $ws = $excel.Workbook.Worksheets[$worksheetName]
+                    if ($ws) {
+                        Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText -ConditionValue "File" -BackgroundColor LightBlue -Column 3
+                        Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText -ConditionValue "Process" -BackgroundColor LightGreen -Column 3
+                        Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText -ConditionValue "Network" -BackgroundColor LightYellow -Column 3
+                    }
+                    
+                    Write-Host "  $($results.Count) détections trouvées"
+                }
+                catch {
+                    Write-Warning "Erreur lors de l'export Excel pour $originalName : $_"
+                    # Créer une feuille avec message d'erreur
+                    "Erreur lors de l'export des résultats" | Export-Excel -ExcelPackage $excel -WorksheetName $worksheetName
+                }
+            } else {
+                # Créer une feuille même si pas de résultats
+                try {
+                    "Aucune détection trouvée" | Export-Excel -ExcelPackage $excel -WorksheetName $safeName -ErrorAction Stop
+                    Write-Host "  Aucune détection trouvée"
+                }
+                catch {
+                    Write-Warning "Erreur lors de la création de la feuille vide pour $originalName : $_"
+                }
+            }
+
+        # Création de la feuille de résumé
+        $summaryData = $hashesByFamily.Keys | ForEach-Object {
+            $familyName = $hashesByFamily[$_].OriginalName
+            $worksheet = $excel.Workbook.Worksheets[$_]
+            
+            # Calcul du nombre de détections avec vérification de null
+            $detectionCount = 0
+            if ($worksheet -and $worksheet.Dimension) {
+                # Soustrait 1 pour ne pas compter l'en-tête
+                $detectionCount = [Math]::Max(0, $worksheet.Dimension.Rows - 1)
+            }
+            
+            [PSCustomObject]@{
+                'Famille' = $familyName
+                'Nombre de détections' = $detectionCount
+                'SHA256 uniques' = $hashesByFamily[$_].SHA256.Count
+                'SHA1 uniques' = $hashesByFamily[$_].SHA1.Count
+                'MD5 uniques' = $hashesByFamily[$_].MD5.Count
+                'Date analyse' = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+            }
+        }
+
+        $summaryData | Export-Excel -ExcelPackage $excel -WorksheetName 'Résumé' -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow
+
+        # Fermer et sauvegarder le fichier Excel
+        Close-ExcelPackage $excel -Show
+
+        Write-Host "`nAnalyse terminée!"
+        Write-Host "Rapport Excel généré: $excelPath"
+    }
+    catch {
+        Write-Error "Erreur lors de l'analyse: $_"
+    }
+}
+
+# Exporter uniquement la fonction principale
+Export-ModuleMember -Function Start-DefenderHunting

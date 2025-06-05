@@ -1,0 +1,39 @@
+flowchart TD
+    subgraph Input["1. Data Input"]
+        A[IoCs CSV File] --> |Import| B[PowerShell Module]
+        C[config.json] --> |Auth Info| B
+    end
+
+    subgraph Processing["2. IoCs Processing"]
+        B --> D[Parse IoCs]
+        D --> |Extraction| E[Hash Sets by Family]
+        E --> F[KQL Queries Generation]
+    end
+
+    subgraph API["3. API Interaction"]
+        C --> |TenantID\nClientID\nSecret| G[Auth Token]
+        G --> H[Defender API]
+        F --> |Queries| H
+    end
+
+    subgraph Storage["4. Storage & Exports"]
+        F --> |Save| I[Queries/*.kql]
+        H --> |Results| J[Exports/*.csv]
+        H --> |Summaries| K[Exports/*-summary.txt]
+    end
+
+    subgraph Structure["Folder Structure"]
+        L[C:\DefenderHunting]
+        L --> |Module| M[Modules\DefenderHunter]
+        L --> |Queries| N[Queries]
+        L --> |Results| O[Exports]
+        L --> |Logs| P[Logs]
+    end
+
+    classDef process fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef storage fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef api fill:#bfb,stroke:#333,stroke-width:2px;
+    
+    class D,E,F process;
+    class I,J,K,M,N,O,P storage;
+    class G,H api;

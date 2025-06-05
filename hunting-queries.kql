@@ -1,0 +1,780 @@
+﻿// Generated Hunting Queries
+// Generated on: 2024-11-22 12:22:16
+
+// Akira Detection Query
+let _MD5 = dynamic(['176b7a50bbcbc34acedb46561a04c3d0','6bd77f8c8495bea141e58d6e5bfaae11','a23bd7947bd29f36583f60cef4e25537','a9107bd317d951bbcc8abdfd607019d6']);
+let _SHA1 = dynamic(['38a29d7b1345d3221a550b5b5909436a451a53ca','f4c98284de41f90e0b5f730452521006e2c50aac','8de9117beeca761518eff314b43f1a35949f70f3','cf86a82cd836ecf00cd95fd3ab0d7545da62ef67']);
+let _SHA256 = dynamic(['c5bcfd00d0b8fda7c4b20cdc9649713d9f01dd12f61ce8ee9c45ec424a6bbdf2','e8b206bb7148e5cb02d8ec5652715dbd73bc064ec6c9df2e75bc39cd07b2d56f','41952b775351035616ca8e8b6e4bd0ed2216e23ebb3f180b552212286eb89a32','64c88e8dedc5b19bdb8566bb8e43a3521a85731dad802af7f55ce534cd40d3f0']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Babuk Locker Detection Query
+let _MD5 = dynamic(['304ee11386f601ec921fa8d1d5343306']);
+let _SHA1 = dynamic(['c726d2557dbec2c099dfe0516db44c87b679ccf1']);
+let _SHA256 = dynamic(['1fdbe938098b885b20d5cea91fbd8c89c4b78ab873c608813df0a96ad98a74d8']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// BlackByte Detection Query
+let _MD5 = dynamic(['127059f0153e28d12608ff9395490f4a','782f6f92759dd8e45b8a0074e9ee4d26']);
+let _SHA1 = dynamic(['ed07ce49fcaca6271efc2dc50deeab5d4611e6c0','1d5a9afdfb40eeb923a80bef7d72d0627010591a']);
+let _SHA256 = dynamic(['8cca9f79b0a3090662a1ada1a247ac8343d69afb75c2bb3ff12992fcdca24367','8ac0ac0e005cc8b08a050fd27636a9edbb2d21e14e7b1eb8ddd5f49d7f2a75cc']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// BlackSuit Detection Query
+let _MD5 = dynamic(['1a057a7c5c511cff88396f4c61bef726','dfeea73e421c76deb18d5ca0800dccf2']);
+let _SHA1 = dynamic(['450a62f90dee6e8f7ca3eced09d2f15aaf859d8c','0497eba0b24d0f4500faad5ae96dbebab9c64608']);
+let _SHA256 = dynamic(['566ba8ad93d36d45194d6265bc478fb79f48aac9c790257563e849218bf71cae','8158dc0569972c10056f507cf9e72f4946600ce163c4c659a610480585cd4935']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Cactus Detection Query
+let _MD5 = dynamic(['f81112d40609b97330688098222ef1fb']);
+let _SHA1 = dynamic(['092f5b3f4f7b437923e4cbaf2dd12a6d793a32b0']);
+let _SHA256 = dynamic(['bbf249ab7d4ea4b17a56d2effcd0df563bf4d5cd4f6e00ebf5e74a74ca0034e2']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Cicada3301 Detection Query
+let _MD5 = dynamic(['04ddf93bc7eb4b8a64c1b24dc88481cc','3598bcc9320615881e7068f4adf14fbf','36217cd4216b22dd76f1ad4a9a38a56a','aae7f81806776384d7d5741b462bd525','aae7f81806776384d7d5741b462bd525','bbe78f3a00555002e6190325279d5542']);
+let _SHA1 = dynamic(['32d22b0d96949287c52d5a8d28b6efb19ce72cef','ff9c089e1d01fea8593f734809896190ae527ae9','be4349892fa29370c8012b188054b9a16b7ce141','a952bf057fd25fae878c1c17a98abc437a8d5749','a952bf057fd25fae878c1c17a98abc437a8d5749','f796bde0d483efdcb5e2f5ffb08f4e0e4a523b91']);
+let _SHA256 = dynamic(['4484acf792403c6ec70b31834b4b5c964a699fc15ad7ec9fb868f02421c4415e','f5498233c68f094ecc91365fc75aa05c7c1615809b8d28814c18e21463268a18','a8dd15a43951a3ecee4ea24653f486b05cf988a2928ca4b70a0284c39f446d3a','beea4084e819200eac4d9d0aab657a4cbb9e9320314da94b9bd3cf13bf4a0ab0','beea4084e819200eac4d9d0aab657a4cbb9e9320314da94b9bd3cf13bf4a0ab0','de3291e905d62e5869a0db81ed669a97379c653fa97dddb28ba3a02762dcd0e6']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// EMBARGO Detection Query
+let _MD5 = dynamic(['101e4fa9a8b3de2c087fa7264d917be7','1d55cb28bfc4d7be906e8ddf9543cbb4','1fe609f8354b3f8e86787df1492822fa','1fe609f8354b3f8e86787df1492822fa','46fb28625acd8ecee67bda5cc3957f51','a0ee6fea27e7e903232489dab93cd989','a0ee6fea27e7e903232489dab93cd989','c06609a6b5747452b5e079e63f015d3c','cfa5dd4880cc8c0eb30ea6610af45ad3']);
+let _SHA1 = dynamic(['c0a0248bf14756e9f57393cd0ea5fa1faa2ae1e1','70b4d7bfe7889478b0961f812a6060d343343ef3','3fba362110bebe1ac10e09ecdec510eaa0857951','3fba362110bebe1ac10e09ecdec510eaa0857951','1eafe1c595422d9ebaf3a62e1268927af5cf319b','f27073a0c52f3860e400428df4bdfb2849b5d12f','f27073a0c52f3860e400428df4bdfb2849b5d12f','326018a304ef232860e2fb9a3a6d6facb3530b49','37dedcedd352d6cfb0ea5dbb7069d017abe034e7']);
+let _SHA256 = dynamic(['3e0b8d5c5906a6ad8151b6701e1fb9047831ae6002a9078f06c7979583a08133','b50071ce87c9f52e7e4c67e4a8ac4cd53aaa327782222892f838f6445e8fd332','ca76062def8c48c9a610e113b569c1a7dea9cbf2ba3816d487a466ab9c489e87','ca76062def8c48c9a610e113b569c1a7dea9cbf2ba3816d487a466ab9c489e87','0705de373b126e27bd8d22ca61dc1a234909a9387991f3cbfd9e49e772c67d0d','821f084b72578a2c82c9c9812580974d07f414c1fc4ee83fc2f725fa324d5ee1','821f084b72578a2c82c9c9812580974d07f414c1fc4ee83fc2f725fa324d5ee1','184e89325b1d804455ce5191c22ea7e4dc29a2d40922c7f665bf3504970a9061','ac566d6b2caa415b1a9ed0774a3faf30385d5121578365a0c4b12e3dfd65b2a2']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Fog Detection Query
+let _MD5 = dynamic(['5537c708edb9a2c21f88e34e8a0f1744','6a58b52b184715583cda792b56a0a1ed']);
+let _SHA1 = dynamic(['86233a285363c2a6863bf642deab7e20f062b8eb','3477a173e2c1005a81d042802ab0f22cc12a4d55']);
+let _SHA256 = dynamic(['26d5748ffe6bd95e3fee6ce184d388a1a681006dc23a0f08d53c083c593c193b','d0c1662ce239e4d288048c0e3324ec52962f6ddda77da0cb7af9c1d9c2f1e2eb']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Hunters International Detection Query
+let _MD5 = dynamic(['46e598798bdde4c72e796edcf2317b52','5b547c300db2a5b09bc3ad69fecee4f2','5b547c300db2a5b09bc3ad69fecee4f2','67fc5d05496d3b33288f516f670842dc','6dc2942a78910b41fb67fee9a1500e7c','a1f11ace4e1e7fb968b9aac1aaacace4','b209df2951e29ab5eab4009579b10b8d','cad30e5f65dfbbfe01a3c047995ef264','de32dd1be40b7530da7cc5f4edb734a0']);
+let _SHA1 = dynamic(['e00efa11ab8464e665f2a1d526e94cca5c71d9fa','41567fe6c2213885d3ce3f60251f18dd3d1515c2','41567fe6c2213885d3ce3f60251f18dd3d1515c2','0e66080d1381cdb3f2226253137055a922f84cef','926350bb1a1c0bcfdbe0e447050bcdd230c8cf9e','c6563a43a783ec2612919147a6c4b529ba49b7fc','99ed6135defff6e675d626f742389d6280abdb60','248909d5e41482db355b2c3c80027b736552d3b0','c01fa77cff3febc23d4967f515a1cc981514ce04']);
+let _SHA256 = dynamic(['e60c210687e79347d06f9a144ee84417ba9ac4c1f303720f2fe4509734d670d6','111bf1e3a267d4e03cfc696c26b8ed3cff293f27ea4c64f7c8eec8087f8af221','111bf1e3a267d4e03cfc696c26b8ed3cff293f27ea4c64f7c8eec8087f8af221','47c937b43c4853ad4a22cfe81ed001b5b4c3340b45f737fe0d4b6098bafbea5d','f0e2e3dc0880e16108bad1eed7016f71a88a6a1071ed906267ea658de14f41d6','bbdd65d78e6f71f499cb89ec9c006cfcc84ed162f373ba84467e4cdb303017c2','76491df69a26019139ac11117cd21bf5d0257a5ebd3d67837f558c8c9c3483d8','e07efd0ec26bbd51e4ccc0e4b2719010c1df4c7866f31cf4d560fabd2f6d43a5','0555494ce5590c0523bead73ceee9be6c2702843f39f234b46e373ccc5c18c4f']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Inc Ransom Detection Query
+let _MD5 = dynamic(['1ce7d5a1566c8c449d0f6772a8c27900','1ce7d5a1566c8c449d0f6772a8c27900','1e31dfc72caed84e44fa9e7eda34f2c6','30c9c57aa570088d745fac7bfd05b805','37e172be64b12f3207300d11b74656b8','464d1e206a20f898ebcd2f6bead6551b','4b1c352b22e917bb16b8533c0e1d4f09','5537c708edb9a2c21f88e34e8a0f1744','6865e779402db84c25a8a585bf705437','68f0bb81bc4aae995218e530b33b1887','734b3fcc06d0a0eda6b83de9165636ac','95a636d99096672f925cc122fff16cb0','96df6d892c42d2945bcdbf4efb03c435','9e8a53181b8ad155453561d46b657a20','a6bebc2261c70d32e0013f5d3e4deb5a','aa8f39dfdf0ca430002ce3820a002324','b209df2951e29ab5eab4009579b10b8d','b39edd2f5c025d5a77c507f4facd67bd','b52f951828537ab7d1be32591f2850f2','bd2df63d592c02ef3ef636648ee237cc','e5788b13546156281bf0a4b38bdd0901']);
+let _SHA1 = dynamic(['60854185f6338e1bfc7497fd41aa44c5c00d8f85','60854185f6338e1bfc7497fd41aa44c5c00d8f85','8c4e2b7139c2fc0cffceaf4d1d011f2c315884f4','d579d18848859614e219afa6332d410e0ca71fc3','1895d7c4f785f92e48b5191fd812822593cbc73f','6516edc4a3e7e8d2ee162ee0c5fcb0220c6c0680','863f030343d2c17f13b3fedc7cacd217dd9ecd98','86233a285363c2a6863bf642deab7e20f062b8eb','bd35faedf0ba77e49bf41e87f8a9e770b5205d7c','00fb067d2831f61f56cbeb84ae627ee526405802','5429e6a53d49aab342b1d0f82b1b627bf8666677','2b5b1f61020082754ff78163228d41baac210aa4','9f01a39dd55148ab2dd6fb97207b09c5ae5e8059','1f0b010bfd0022d74e0137fecbb46d15780f90ea','25eaa69687e2d3379cd97c9168c00f8737ba6cdb','70329e3f10ab96fcd1461d46b3b78d80dd1474e6','99ed6135defff6e675d626f742389d6280abdb60','beb7059845d3c27edafdac5e37c911ccbd086e9e','bfa5e76f7dd50f15925339cbdcdc125c9ac05d94','59486472c37789cced6d808d90ceb4de4bfd1944','7df28d340d7084647921cc25a8c2068bb192bdbb']);
+let _SHA256 = dynamic(['73170761d6776c0debacfbbc61b6988cb8270a20174bf5c049768a264bb8ffaf','73170761d6776c0debacfbbc61b6988cb8270a20174bf5c049768a264bb8ffaf','81244062a2de4adc52ae10393b7a3a33985a7e5bea376b839ab0477d6c7fd5e1','8cd552392bb25546ba58e73d63c4b7c290188ca1060f96c8abf641ae9f5a8383','bc747e3bf7b6e02c09f3d18bdd0e64eef62b940b2f16c9c72e647eec85cf0138','dfd01b2a4cc003db0e819f69d97e6efb9331ad6698aa63cddaef34769c63206e','755b2ea6514a4982a292caf3da6edfd197b9b993b691fc16b3806fbec8ea71fd','26d5748ffe6bd95e3fee6ce184d388a1a681006dc23a0f08d53c083c593c193b','32ffdf518da98e65c31877cc1dcbd2a5894341188c9a68f0db4d1efad9e85fd3','15a090b38635ee176c967e27b7b7e257260f02df36b403dc9ab5dee9c8fc7d48','13d8429d500e20be8588f250449f70a6e8f8f34df9423b2897fd33bbb8712c5f','3338eb152efd961f92ffaa7a2ed820e77e8c557b2a61961c56d68f03c689568d','6fe65f4ce9bfd6d20eaf490d08a5cd5f70b25ff9867d0953e68cb6dc190bd9fa','9872679f1ff9cd9a4adb83bdcf46c7532729240ef8f302c1b251665847c418f1','58647b42acf91bd64a9e2927c3cb45dae82f4b313009650c0a831ea279541adc','dcf66ed0d39bb3c1cd154d595bfa39d18148b3e1e68b8f18dd89221cf66ff4ba','76491df69a26019139ac11117cd21bf5d0257a5ebd3d67837f558c8c9c3483d8','9adde14c1c7596359e1a3912da625266414fa602d7de6027c8c7c55a3e6621e2','a0915b1c568ed0a58e8f5afc400591b690afd6b1a9c66da8c5f1ccaf3d1715e5','8af53ee05abd7ed90db4c7f06be686e8086fe5ea536d72bebaee2bcdf9cc4dce','26cb6e9f56333682122fafe79dbcdfd51e9f47cc7217dccd29ac6fc33b5598cd']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Interlock Detection Query
+let _MD5 = dynamic(['07c6b4756715d73304ec0ebc951dddad']);
+let _SHA1 = dynamic(['eeafa71946e81d8fe5ebf6be53e83a84dcca50ba']);
+let _SHA256 = dynamic(['9d00158489f0a399fc0bc3ce1e8fc309d29a327f6ea0097e34e0f49b72a85079']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Lockbit 3.0 Detection Query
+let _MD5 = dynamic(['75b55bb34dac9d02740b9ad6b6820360','dcf21ca46349ce36f7866c24f1f60f0f']);
+let _SHA1 = dynamic(['a17c21b909c56d93d978014e63fb06926eaea8e7','fafe9c2c410aed31084c98892ad05237f709de81']);
+let _SHA256 = dynamic(['141b2190f51397dbd0dfde0e3904b264c91b6f81febc823ff0c33da980b69944','961b36bb78d27b3432fae08e5c4272fe295b5e24e832c6f6bf1ec3cf87057dab']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Lynx Detection Query
+let _MD5 = dynamic(['7206696841bf21a772bcea5306495885']);
+let _SHA1 = dynamic(['1b22456612b2815995154fd39f52cbc100cffed7']);
+let _SHA256 = dynamic(['dd6c83b9a92ef15e331ecf40b5fdb581f68bacf4b2981b7d4ba6625f6bc9b8b2']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Medusa Detection Query
+let _MD5 = dynamic(['01b3979a498a825b229bdbe9d3b1f319','046d8658c6ca9df9f9a8143aeb85a559','282df7bcb720a5b6f409caf9ccda2f75','29efd64dd3c7fe1e2b022b7ad73a1ba5','41ebdadc06b18164dc571f9db251c01b','67651e9d2da634adedbe216948d5f752','6a58b52b184715583cda792b56a0a1ed','875d2501b841134ce3b91d3cd4f90438','a3498123f419632d0cb24c9728bbf27e','a72feaaf253e1aca98ee8037c6ffb564','c67f3497c310c01018f599b3eebae99e','c6cc0def7d584f431d69126c1cc33a20','d2d3e1f8023b12fb89e400c7e8ecd7db','d3b17ddf0b98fd2441ed46b033043456','dab7a18b02399053ba3ff1e568789fce','e34bbe2b21fe3382b04676c28740fa22','e9dc31112b73a51020faffa4564c22bf']);
+let _SHA1 = dynamic(['f869bc4fc97bef0890506a299bbb2f4898977922','51d3d661774cc50bb22e62beafc4bc6029df2392','0e62d10ff194e84ed8c6bd71620f56ef9e557072','e3b6ea8c46fa831cec6f235a5cf48b38a4ae8d69','ddfb009f8b92226aa45c467f8d0eebb29a8e2ff5','0731bd320633a6d1ca7835e2bba2c5ee5429b293','3477a173e2c1005a81d042802ab0f22cc12a4d55','7e0465da71c67a4151b731e7a26715a9629b95a4','10373768326b2ecd51115131a3fc83cf685cf448','523f4823167a42554331ea48d0489f0c58ba318e','d73e52e55b1ad65015886b3a01b1cc27c87e9952','ea2646a646662909cd2bf5443e6b0030fb3cc6eb','4112ef95386ea4d1131be7c600d49a310e9d8f5b','93ed68c7e5096d936115854954135d110648e739','ceee090c9ee8279d6410d8d450d55acb81d34766','d95ceff32e2870dc70ffccf0893a4f6e5465b6fb','59021467fb7a1a46f2c0ea876a2da27ffd9f185b']);
+let _SHA256 = dynamic(['6b29628aacc92e7414ce034285aece301265d1f26e18c6cae4112540592dd82a','1409e010675bf4a40db0a845b60db3aae5b302834e80adeec884aebc55eccbf7','3cc5ee93a9ba1fc57389705283b760c8bd61f35e9398bbfa3210e2becf6d4b05','61c0810a23580cf492a6ba4f7654566108331e7a4134c968c2d6a05261b2d8a1','a9ca77dfe03ce15004157727bb43ba66f00ceb215362c9b3d199f000edaa8d61','aef6ce3014add838cf676b57957d630cd2bb15b0c9193cf349bcffecddbc3623','d0c1662ce239e4d288048c0e3324ec52962f6ddda77da0cb7af9c1d9c2f1e2eb','1902193e23ead051c42809a7368142d2485eac07949612d206a1324fcd41b4be','7b9dfaf95b3fd3585eef108697b78ac58f905bfd0bbd8d57fca43ffb9bea5ca7','138e7988bb7c7138c93e87141a4bca3f94d1017a5bd316c210c6659337153dbc','cc585d962904351ce1d92195b0fc79034dc3b13144f7c7ff24cd9f768b25e9ef','66928c3316a12091995198710e0c537430dacefac1dbe78f12a331e1520142bd','7accd179e8a6b2fc907e7e8d087c52a7f48084852724b03d25bebcada1acbca5','94795fd89366e01bd6ce6471ff27c3782e2e16377a848426cf0b2e6baee9449b','05842de51ede327c0f55df963f6de4e32ab88f43a73b9e0e1d827bc70199eff0','d00f6b348f952059e8867c793fd7075ef6b2dcdeb2be546f898c0191087405e5','31df4522ca2134f83c0315babc176dddf10f392a9a95194f066627f7f0d97ce8']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Nebula Detection Query
+let _MD5 = dynamic(['68a1f7c796de1d0df6b2d78e182df3a0']);
+let _SHA1 = dynamic(['43e3521e0403636150ac0c6c4da6a536f0ab504f']);
+let _SHA256 = dynamic(['5b165b01f9a1395cae79e0f85b7a1c10dc089340cf4e7be48813ac2f8686ed61']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Play Ransomware Detection Query
+let _MD5 = dynamic(['46c17c999744470b689331f41eab7df1']);
+let _SHA1 = dynamic(['b8a63127df6a87d333061c622220d6d70ed80f7c']);
+let _SHA256 = dynamic(['c5b5def1c8882b702b6b25cbd94461c737bc151366d2d9eba5006c04886bfc9a']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// RansomHub Detection Query
+let _MD5 = dynamic(['061a4f9e01a447ec24b2d6ffe1b93272','aca7aa567ee3c953b7a3aff909192690','c457356cde4e4431e592dfa211bbc1e1']);
+let _SHA1 = dynamic(['14556aeb9fdbea4bab3f4658af577804af599d82','62ab2946175346785aff06665315a4556be147a2','4ebea36275bc199b859f92d57ec2603b1735529f']);
+let _SHA256 = dynamic(['9c9075631e41a0826113cf5db42fcb787fce959b123ba79ceaf1ea46d553c91b','f3d86b39b678d33f99c0ec44c41d8c8485bcaba8ca335790a2355eff0de6fbbb','0b44e2fae069d927a15bf695b63f932062711b6fbb1448fc4608d8d50811e497']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Rhysida Detection Query
+let _MD5 = dynamic(['6dd8c26f64df37d0c7645b63c9bba51f','d41d8cd98f00b204e9800998ecf8427e']);
+let _SHA1 = dynamic(['9e2d705afad61509a90fd07915d3925aa4a3d997','da39a3ee5e6b4b0d3255bfef95601890afd80709']);
+let _SHA256 = dynamic(['a40b815afce131df6d4bc3f389cb64b742f545481119d3ecb78dda22e546a41a','e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// STOP/DJVU Detection Query
+let _MD5 = dynamic(['3198cb376134375a4c51899169354d20']);
+let _SHA1 = dynamic(['60526c94b741b50b0b5b8356c60f831e0a0fb6cf']);
+let _SHA256 = dynamic(['7c7c88659ab8808c038197d18719f70a5c432d9389ec2aa52defb7ba02c47495']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+// Unknown Detection Query
+let _MD5 = dynamic(['901652b73ffdf4637c7752b6090e3290','b98ccbd215e8fe6ac379831a9103c377']);
+let _SHA1 = dynamic(['e7c79843696eadb8a99c3a35cf58aa1352104f7e','a5d264baa5d16da75ecad99d41cb1148f6284e66']);
+let _SHA256 = dynamic(['4ad8734edc480656561b35aa6d4bbd93048016b9ee14cfaef3bd0ad84f0c4254','a437c844e6c54cc2fcf5f1c293a0be8be28958cecbbd363360046a9900f1e5a0']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
+//  Detection Query
+let _MD5 = dynamic(['']);
+let _SHA1 = dynamic(['']);
+let _SHA256 = dynamic(['']);
+
+// File Events
+DeviceFileEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    FolderPath,
+    SHA256,
+    SHA1,
+    MD5,
+    InitiatingProcessCommandLine,
+    InitiatingProcessFileName
+
+// Process Events
+DeviceProcessEvents
+| where TimeGenerated > ago(7d)
+| where SHA256 in (_SHA256)
+    or SHA1 in (_SHA1)
+    or MD5 in (_MD5)
+| project
+    TimeGenerated,
+    DeviceName,
+    FileName,
+    ProcessCommandLine,
+    AccountName,
+    SHA256,
+    InitiatingProcessCommandLine
+
