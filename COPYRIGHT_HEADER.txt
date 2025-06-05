@@ -1,0 +1,8 @@
+"# =============================================================================" 
+"# DefenderHunting - Microsoft Defender Advanced Hunting Solution"  
+"# Copyright (c) 2024 Wiston Lestin. All rights reserved."  
+"# "  
+"# PROPRIETARY SOFTWARE - NOT FOR REDISTRIBUTION"  
+"# This software contains confidential and proprietary information."  
+"# Unauthorized reproduction or distribution is strictly prohibited."  
+"# =============================================================================" 

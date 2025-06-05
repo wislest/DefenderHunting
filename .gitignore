@@ -3,3 +3,7 @@
 "Exports/"  
 "*.tmp"  
 "*.log" 
+"# Proprietary algorithms (if any)"  
+"*.algorithm"  
+"# Sensitive business logic"  
+"*/Proprietary/*" 

@@ -1,0 +1,7 @@
+"# Repository Security Configuration" 
+""  
+"## Recommended GitHub Settings"  
+"1. Enable branch protection"  
+"2. Require code review"  
+"3. Enable vulnerability alerts"  
+"4. Use signed commits" 
