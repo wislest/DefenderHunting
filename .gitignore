@@ -1,8 +1,12 @@
-"config.json"  
-"Logs/"  
-"Exports/"  
-"*.tmp"  
-"*.log" 
+# Fichiers de configuration avec credentials
+config.json
+.env
+
+# Logs et exports
+Logs/
+Exports/
+*.tmp
+*.log 
 "# Proprietary algorithms (if any)"  
 "*.algorithm"  
 "# Sensitive business logic"  

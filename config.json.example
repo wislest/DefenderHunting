@@ -1,8 +1,8 @@
-﻿{
-    "TenantId":  "***REMOVED***",
-    "ExportPath":  "C:\\DefenderHunting\\Exports",
-    "ClientId":  "***REMOVED***",
-    "ClientSecret":  "***REMOVED***",
+{
+    "TenantId": "your-tenant-id-here",
+    "ClientId": "your-client-id-here",
+    "ClientSecret": "your-client-secret-here",
+    "ExportPath": "C:\\DefenderHunting\\Exports",
     "LookbackDays": 30,
     "MaxHashesPerQuery": 50
 }
