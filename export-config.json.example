@@ -1,0 +1,7 @@
+{
+    "WorkspaceId": "<your-defender-workspace-id>",
+    "ExportPath": "C:\\DefenderHunting\\Exports",
+    "EmailRecipient": "soc@example.com",
+    "SmtpServer": "smtp.example.com",
+    "RetentionDays": 30
+}

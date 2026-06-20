@@ -1,118 +1,86 @@
-# DefenderHunter
+# 🛡️ DefenderHunter
+
+![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=powershell&logoColor=white)
+![KQL](https://img.shields.io/badge/KQL-Advanced%20Hunting-0078D4)
+![Defender XDR](https://img.shields.io/badge/Microsoft-Defender%20XDR-0078D4?logo=microsoft)
+![Sentinel](https://img.shields.io/badge/Microsoft-Sentinel-0089D6?logo=microsoftazure&logoColor=white)
+![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK%20mapped-c4162a)
+![Detection-as-Code](https://img.shields.io/badge/Detection--as--Code-✓-2ea44f)
 
 > **Detection-as-Code threat-hunting framework for Microsoft Defender XDR & Sentinel.**
-> Automates IOC enrichment and Advanced Hunting across endpoints, with 20+ ransomware-family detection query packs mapped to MITRE ATT&CK.
+> Automates IOC enrichment and Advanced Hunting across endpoints, with **22 ransomware-family KQL query packs** mapped to MITRE ATT&CK.
 
-## Features
-- **Automated IOC hunting** via Microsoft Defender Advanced Hunting (KQL); CSV/JSON IOC ingestion with auto hash-type detection (MD5 / SHA1 / SHA256).
-- **20+ ransomware detection packs** (Akira, BlackByte, BlackSuit, Lockbit 3.0, Medusa, Play, Rhysida, RansomHub, Interlock, …) under `Queries/`.
+---
+
+## ✨ Features
+
+- **Automated IOC hunting** via Microsoft Defender Advanced Hunting (KQL) over the Defender API.
+- **Flexible IOC ingestion** — CSV/JSON input with **auto hash-type detection** (MD5 / SHA1 / SHA256).
+- **22 ransomware detection packs** under `Queries/` (see below).
 - **Modular PowerShell** design (`Modules/`, `Scripts/`) with export pipelines and reporting.
-- **Secure by default**: credentials live in `config.json` / `.env` (git-ignored) — never hard-coded. See [SECURITY.md](SECURITY.md).
+- **Secure by default** — credentials live in `config.json` / `.env` (git-ignored); never hard-coded. See [SECURITY.md](SECURITY.md).
 
-# DefenderHunting
+## 🎯 Ransomware coverage (`Queries/`)
 
-## Description
-Solution automatisée pour l'analyse des Indicateurs de Compromission (IoCs) via Microsoft Defender Advanced Hunting.
+`Akira` · `Babuk Locker` · `BlackByte` · `BlackSuit` · `Cactus` · `Cicada3301` · `EMBARGO` · `Fog` · `Hunters International` · `Inc Ransom` · `Interlock` · `Lockbit 3.0` · `Lynx` · `Medusa` · `Nebula` · `Play` · `RansomHub` · `Rhysida` · `STOP/DJVU` · … (plus generic/unknown buckets)
 
-## Démarrage Rapide
+## 🚀 Quick start
 
-### 1. Configuration des Identifiants
+**Prerequisites:** PowerShell 5.1+, an Entra ID app registration with Microsoft Defender API permissions (`AdvancedHunting.Read.All`).
 
-⚠️ **Important**: Ne commitez JAMAIS vos credentials! Consultez [SECURITY.md](SECURITY.md) pour les meilleures pratiques.
-
-**Option A - Fichier config.json (Recommandé)**
 ```powershell
-# Copier le template
+# 1) Configure Defender API credentials
 Copy-Item config.json.example config.json
+#   edit config.json -> TenantId, ClientId, ClientSecret
 
-# Éditer config.json avec vos vraies valeurs Azure AD
-# TenantId, ClientId, ClientSecret
+# 2) (optional) Configure export/report settings
+Copy-Item export-config.json.example export-config.json
+#   edit export-config.json -> WorkspaceId, ExportPath, EmailRecipient, SmtpServer
+
+# 3) Validate connectivity to the Defender API
+.\CheckDefenderAPI.ps1
+
+# 4) Hunt a set of IOCs
+.\Main.ps1 -IocsFile .\my-iocs.csv
+
+# ...or run the scheduled export workflow
+.\Main.ps1 -ConfigPath .\export-config.json
 ```
 
-**Option B - Variables d'environnement**
-```powershell
-Copy-Item .env.example .env
-# Éditer .env puis charger les variables
-Get-Content .env | ForEach-Object {
-    if ($_ -match '^\s*([^#][^=]+)=(.+)$') {
-        [Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim(), 'Process')
-    }
-}
-```
+## 📑 IOC input format
 
-### 2. Préparer le Fichier IoCs
+CSV with three columns; hashes are a JSON object:
 
-**Format requis**: CSV avec 3 colonnes obligatoires:
-- `FullPath`: Chemin du fichier (peut être "Unknown" si inconnu)
-- `FamilyName`: Nom de la famille de malware
-- `FileHashes`: Objet JSON avec `md5`, `sha1`, `sha256`
-
-**Exemple de format correct**:
 ```csv
 FullPath,FamilyName,FileHashes
-C:\temp\malware.exe,Akira,"{""md5"":""176b7a50bbcbc34acedb46561a04c3d0"",""sha1"":""38a29d7b1345d3221a550b5b5909436a451a53ca"",""sha256"":""c5bcfd00d0b8fda7c4b20cdc9649713d9f01dd12f61ce8ee9c45ec424a6bbdf2""}"
+C:\temp\malware.exe,Akira,"{""md5"":""…"",""sha1"":""…"",""sha256"":""…""}"
 ```
 
-#### Conversion de Fichiers Simplifiés
-
-Si vous avez un CSV simple avec seulement `FamilyName` et un hash SHA256:
-
-```csv
-FamilyName,FileHashes
-EDR killer,f51397bb18e166c933fe090320ec23397fed73b68157ce86406db9f07847d355
-```
-
-Utilisez le script de conversion:
-```powershell
-.\Convert-IocsFormat.ps1 -InputFile "votre-fichier.csv" -OutputFile "votre-fichier-formatted.csv"
-```
-
-Le script détecte automatiquement le type de hash (MD5/SHA1/SHA256) selon sa longueur et génère le format JSON requis.
-
-### 3. Exécuter l'Analyse
+Have a simpler `FamilyName,SHA256` list? Convert it automatically (hash type detected by length):
 
 ```powershell
-# Importer le module
-Import-Module .\Modules\DefenderHunter\DefenderHunter.psd1 -Force
-
-# Lancer la chasse aux menaces
-Start-DefenderHunting -IocsFile ".\votre-fichier-formatted.csv" -ConfigPath ".\config.json" -Verbose
+.\Convert-IocsFormat.ps1 -InputFile simple-iocs.csv -OutputFile formatted-iocs.csv
 ```
 
-### 4. Résultats
+## 📂 Repository layout
 
-Les résultats sont générés dans:
-- **Excel**: `Exports\DefenderHunting_Results_{timestamp}.xlsx`
-- **Requêtes KQL**: `Queries\{FamilyName}.kql`
-- **Logs**: `Logs\`
+| Path | Purpose |
+|------|---------|
+| `Main.ps1` | **Entry point** — IOC hunting + scheduled export |
+| `CheckDefenderAPI.ps1` | Verify Defender API authentication/connectivity |
+| `Convert-IocsFormat.ps1` | Normalize simple IOC lists into the required CSV/JSON format |
+| `Queries/` | 22 ransomware-family KQL query packs |
+| `Modules/DefenderHunter/` | PowerShell module (export core, queries, IOC hunter) |
+| `Scripts/` | Export pipeline scripts |
+| `config.json.example`, `export-config.json.example` | Configuration templates (copy → fill → **never commit the real files**) |
+| `SECURITY.md` | Credential-handling & security guidance |
 
-## Fichiers Disponibles
+## 🔐 Security
 
-- `cover-iocs.csv` - Exemple complet au bon format
-- `test_iocs.csv` - Fichier de test minimal
-- `config.json.example` - Template de configuration
-- `.env.example` - Template pour variables d'environnement
-- `Convert-IocsFormat.ps1` - Convertisseur de format CSV
+- **Never commit `config.json` / `.env` / `export-config.json`** — they hold tenant credentials and are git-ignored by default.
+- Rotate the app `ClientSecret` regularly and grant the app **least-privilege** Defender API permissions.
+- See [SECURITY.md](SECURITY.md) for full guidance.
 
-## Permissions Azure AD Requises
+## 📄 License
 
-Votre application Azure AD doit avoir:
-- **API**: Microsoft Threat Protection
-- **Permission**: `AdvancedHunting.Read.All` (Application)
-- **Grant admin consent**: Oui
-
-## Dépannage
-
-### Erreur: "Conversion from JSON failed"
-→ Format CSV incorrect. Utilisez `Convert-IocsFormat.ps1` pour convertir votre fichier.
-
-### Erreur: "Specified tenant identifier is neither a valid DNS name"
-→ TenantId invalide dans config.json. Vérifiez vos credentials Azure AD.
-
-### Erreur: "Fichier IoCs introuvable"
-→ Vérifiez le nom du fichier et le chemin. Utilisez `Get-ChildItem *.csv` pour lister les fichiers disponibles.
-
-## Documentation Complète
-
-- [CLAUDE.md](CLAUDE.md) - Guide technique détaillé
-- [SECURITY.md](SECURITY.md) - Gestion sécurisée des identifiants 
+See [LICENSE](LICENSE).
