@@ -27,7 +27,7 @@ Author = 'Wiston Lestin'
 CompanyName = 'SecureOrbit'
 
 # Copyright statement for this module
-Copyright = '(c) 2024 SecurityTeam. All rights reserved.'
+Copyright = '(c) 2024-2026 Wiston Lestin. Released under the MIT License.'
 
 # Description of the functionality provided by this module
 Description = 'Module pour la chasse aux IoCs dans Microsoft Defender'

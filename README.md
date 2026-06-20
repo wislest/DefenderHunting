@@ -6,6 +6,7 @@
 ![Sentinel](https://img.shields.io/badge/Microsoft-Sentinel-0089D6?logo=microsoftazure&logoColor=white)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK%20mapped-c4162a)
 ![Detection-as-Code](https://img.shields.io/badge/Detection--as--Code-✓-2ea44f)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 > **Detection-as-Code threat-hunting framework for Microsoft Defender XDR & Sentinel.**
 > Automates IOC enrichment and Advanced Hunting across endpoints, with **22 ransomware-family KQL query packs** mapped to MITRE ATT&CK.
@@ -83,4 +84,4 @@ Have a simpler `FamilyName,SHA256` list? Convert it automatically (hash type det
 
 ## 📄 License
 
-See [LICENSE](LICENSE).
+Released under the **[MIT License](LICENSE)**.
