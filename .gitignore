@@ -1,13 +1,15 @@
-# Fichiers de configuration avec credentials
+# Credentials / config
 config.json
 .env
+export-config.json
 
-# Logs et exports
+# Logs, exports, scan output
 Logs/
 Exports/
+*.log
 *.tmp
-*.log 
-"# Proprietary algorithms (if any)"  
-"*.algorithm"  
-"# Sensitive business logic"  
-"*/Proprietary/*" 
+scan_results_*.csv
+
+# Archives & backups
+*.zip
+*.backup

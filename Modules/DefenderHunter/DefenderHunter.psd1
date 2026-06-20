@@ -21,7 +21,7 @@ ModuleVersion = '1.0.0'
 GUID = '98206fbd-7b0f-46fc-a6e8-70ed2c52364f'
 
 # Author of this module
-Author = 'Wiston Lestion - Security Team'
+Author = 'Wiston Lestin'
 
 # Company or vendor of this module
 CompanyName = 'SecureOrbit'

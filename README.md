@@ -1,3 +1,14 @@
+# DefenderHunter
+
+> **Detection-as-Code threat-hunting framework for Microsoft Defender XDR & Sentinel.**
+> Automates IOC enrichment and Advanced Hunting across endpoints, with 20+ ransomware-family detection query packs mapped to MITRE ATT&CK.
+
+## Features
+- **Automated IOC hunting** via Microsoft Defender Advanced Hunting (KQL); CSV/JSON IOC ingestion with auto hash-type detection (MD5 / SHA1 / SHA256).
+- **20+ ransomware detection packs** (Akira, BlackByte, BlackSuit, Lockbit 3.0, Medusa, Play, Rhysida, RansomHub, Interlock, …) under `Queries/`.
+- **Modular PowerShell** design (`Modules/`, `Scripts/`) with export pipelines and reporting.
+- **Secure by default**: credentials live in `config.json` / `.env` (git-ignored) — never hard-coded. See [SECURITY.md](SECURITY.md).
+
 # DefenderHunting
 
 ## Description
