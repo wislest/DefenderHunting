@@ -120,9 +120,27 @@ function Invoke-DefenderQuery {
                                     -Body $body `
                                     -ContentType "application/json; charset=utf-8" `
                                     -ErrorAction Stop
-        
+
         Write-Verbose "Requête exécutée avec succès"
-        return $response.Results
+
+        # Vérifier la propriété Results (même si c'est un tableau vide)
+        if ($response.PSObject.Properties.Name -contains 'Results') {
+            $resultCount = if ($response.Results) { $response.Results.Count } else { 0 }
+            Write-Verbose "Nombre de résultats retournés par l'API : $resultCount"
+
+            if ($resultCount -gt 0) {
+                return $response.Results
+            }
+            else {
+                Write-Verbose "Tableau Results vide - aucune détection"
+                return $null
+            }
+        }
+        else {
+            Write-Verbose "Aucune propriété 'Results' dans la réponse de l'API"
+            Write-Verbose "Contenu de la réponse : $($response | ConvertTo-Json -Depth 2)"
+            return $null
+        }
     }
     catch {
         $statusCode = $_.Exception.Response.StatusCode.value__
@@ -229,12 +247,14 @@ function Start-DefenderHunting {
         $sessionExportPath = Join-Path $paths.Exports $timestamp
         New-Item -ItemType Directory -Path $sessionExportPath -Force | Out-Null
 
-        # Création du fichier Excel
+        # Préparation des variables Excel (création à la demande)
         $excelPath = Join-Path $sessionExportPath "DefenderHunting_Results_$timestamp.xlsx"
-        $excel = Export-Excel -Path $excelPath -PassThru
+        $excelCreated = $false
 
         # Traitement et organisation des IoCs par famille
         $hashesByFamily = @{}
+        $detectionResults = @{} # Tracker les résultats de détection par hash
+
         foreach ($ioc in $iocs) {
             if (-not $ioc.FileHashes) {
                 Write-Warning "Ligne ignorée - Pas de hashes : $($ioc | ConvertTo-Json)"
@@ -262,19 +282,58 @@ function Start-DefenderHunting {
             }
         
             try {
-                # Traitement des hashes
-                $hashes = $ioc.FileHashes | ConvertFrom-Json
-                if ($hashes.sha256) { [void]$hashesByFamily[$safeName].SHA256.Add("'$($hashes.sha256)'") }
-                if ($hashes.sha1) { [void]$hashesByFamily[$safeName].SHA1.Add("'$($hashes.sha1)'") }
-                if ($hashes.md5) { [void]$hashesByFamily[$safeName].MD5.Add("'$($hashes.md5)'") }
-                
+                # Traitement des hashes avec validation JSON
+                $hashesJson = $ioc.FileHashes.Trim()
+
+                # Vérifier si c'est un JSON valide ou un simple hash
+                if ($hashesJson -match '^\{.*\}$') {
+                    # Format JSON structuré
+                    try {
+                        $hashes = $hashesJson | ConvertFrom-Json -ErrorAction Stop
+                        if ($hashes.sha256 -and $hashes.sha256 -match '^[a-fA-F0-9]{64}$') {
+                            [void]$hashesByFamily[$safeName].SHA256.Add("'$($hashes.sha256)'")
+                        }
+                        if ($hashes.sha1 -and $hashes.sha1 -match '^[a-fA-F0-9]{40}$') {
+                            [void]$hashesByFamily[$safeName].SHA1.Add("'$($hashes.sha1)'")
+                        }
+                        if ($hashes.md5 -and $hashes.md5 -match '^[a-fA-F0-9]{32}$') {
+                            [void]$hashesByFamily[$safeName].MD5.Add("'$($hashes.md5)'")
+                        }
+                    }
+                    catch {
+                        Write-Warning "Erreur de parsing JSON pour $familyName : $_. Hash brut: $hashesJson"
+                        continue
+                    }
+                }
+                elseif ($hashesJson -match '^[a-fA-F0-9]+$') {
+                    # Hash simple sans structure JSON
+                    $hashLength = $hashesJson.Length
+                    if ($hashLength -eq 32) {
+                        [void]$hashesByFamily[$safeName].MD5.Add("'$hashesJson'")
+                    }
+                    elseif ($hashLength -eq 40) {
+                        [void]$hashesByFamily[$safeName].SHA1.Add("'$hashesJson'")
+                    }
+                    elseif ($hashLength -eq 64) {
+                        [void]$hashesByFamily[$safeName].SHA256.Add("'$hashesJson'")
+                    }
+                    else {
+                        Write-Warning "Hash avec longueur invalide ($hashLength) pour $familyName : $hashesJson"
+                        continue
+                    }
+                }
+                else {
+                    Write-Warning "Format de hash non reconnu pour $familyName : $hashesJson"
+                    continue
+                }
+
                 # Traitement du chemin complet
-                if (-not [string]::IsNullOrWhiteSpace($ioc.'FullPath')) { 
+                if (-not [string]::IsNullOrWhiteSpace($ioc.'FullPath')) {
                     [void]$hashesByFamily[$safeName].Paths.Add($ioc.'FullPath')
                 }
             }
             catch {
-                Write-Warning "Erreur lors du traitement des hashes pour $familyName : $_"
+                Write-Warning "Erreur inattendue lors du traitement pour $familyName : $_"
                 continue
             }
         }
@@ -401,46 +460,61 @@ union FileEvents, ProcessEvents, NetworkEvents
                     $worksheetName = $worksheetName.Substring(0, 28) + "..."
                 }
             
-                if ($results) {
+                if ($results -and $results.Count -gt 0) {
                     try {
-                        # Création d'une nouvelle feuille de calcul
-                        $worksheet = Add-Worksheet -ExcelPackage $excel -WorksheetName $worksheetName -ErrorAction Stop
-                        
-                        # Export des résultats vers Excel avec vérification
-                        $results | Export-Excel -ExcelPackage $excel -WorksheetName $worksheetName -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -ErrorAction Stop
-                        
-                        # Vérification et application du formatage conditionnel
-                        $ws = $excel.Workbook.Worksheets[$worksheetName]
-                        if ($ws -and $ws.Dimension) {
-                            Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText -ConditionValue "File" -BackgroundColor LightBlue -Column 3
-                            Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText -ConditionValue "Process" -BackgroundColor LightGreen -Column 3
-                            Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText -ConditionValue "Network" -BackgroundColor LightYellow -Column 3
+                        # Marquer qu'on a trouvé des résultats
+                        $excelCreated = $true
+
+                        # Tracker les détections par hash
+                        $machinesAffected = @()
+                        foreach ($result in $results) {
+                            $sha = if ($result.SHA256) { $result.SHA256 } else { "" }
+                            $device = if ($result.DeviceName) { $result.DeviceName } else { "" }
+
+                            if ($sha -and $device) {
+                                if (-not $detectionResults.ContainsKey($sha)) {
+                                    $detectionResults[$sha] = @{
+                                        Count = 0
+                                        Machines = [System.Collections.Generic.HashSet[string]]::new()
+                                        Family = $originalName
+                                    }
+                                }
+                                $detectionResults[$sha].Count++
+                                [void]$detectionResults[$sha].Machines.Add($device)
+                            }
+
+                            if ($device -and $device -notin $machinesAffected) {
+                                $machinesAffected += $device
+                            }
                         }
-                        
-                        Write-Host "  $($results.Count) détections trouvées"
+
+                        # Nettoyer les résultats - remplacer les valeurs null par des chaînes vides
+                        $cleanResults = @()
+                        foreach ($result in $results) {
+                            $obj = [PSCustomObject]@{}
+                            foreach ($prop in $result.PSObject.Properties) {
+                                $value = if ($null -eq $prop.Value) { "" } else { $prop.Value }
+                                $obj | Add-Member -MemberType NoteProperty -Name $prop.Name -Value $value
+                            }
+                            $cleanResults += $obj
+                        }
+
+                        # Export simple vers Excel (compatible avec toutes les versions d'ImportExcel)
+                        $cleanResults | Export-Excel -Path $excelPath -WorksheetName $worksheetName -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -Show:$false
+
+                        Write-Host "  $($results.Count) détections trouvées et exportées vers Excel"
+                        if ($machinesAffected.Count -gt 0) {
+                            Write-Host "    Machines affectées: $($machinesAffected -join ', ')" -ForegroundColor Yellow
+                        }
                     }
                     catch {
                         Write-Warning "Erreur lors de l'export Excel pour $originalName : $_"
-                        # Création d'une feuille avec message d'erreur
-                        try {
-                            $errorWorksheet = Add-Worksheet -ExcelPackage $excel -WorksheetName $worksheetName -ErrorAction Stop
-                            Set-ExcelRange -Worksheet $errorWorksheet -Range "A1" -Value "Erreur lors de l'export des résultats" -Bold
-                        }
-                        catch {
-                            Write-Warning "Impossible de créer la feuille d'erreur : $_"
-                        }
+                        Write-Verbose "Détails de l'erreur : $($_.Exception.Message)"
+                        Write-Verbose "Stack trace : $($_.ScriptStackTrace)"
                     }
-                } 
+                }
                 else {
-                    # Création d'une feuille pour les résultats vides
-                    try {
-                        $emptyWorksheet = Add-Worksheet -ExcelPackage $excel -WorksheetName $worksheetName -ErrorAction Stop
-                        Set-ExcelRange -Worksheet $emptyWorksheet -Range "A1" -Value "Aucune détection trouvée" -Bold
-                        Write-Host "  Aucune détection trouvée"
-                    }
-                    catch {
-                        Write-Warning "Erreur lors de la création de la feuille vide pour $originalName : $_"
-                    }
+                    Write-Host "  Aucune détection trouvée"
                 }
             }
             catch {
@@ -449,98 +523,84 @@ union FileEvents, ProcessEvents, NetworkEvents
             }
         } # Fin de la boucle foreach
 
-        # Création de la feuille de résumé
-        # Initialisation du fichier Excel et de la collection de résumé
-        Write-Host "Création du fichier Excel..."
-        $excelPath = Join-Path $sessionExportPath "DefenderHunting_Results_$timestamp.xlsx"
-        $summaryResults = [System.Collections.ArrayList]::new()
-        $excelCreated = $false
-        
-        # Traitement de chaque famille
-        foreach ($safeName in $hashesByFamily.Keys) {
-            $originalName = $hashesByFamily[$safeName].OriginalName
-            Write-Host "`nTraitement de la famille: $originalName"
-            
-            # Génération et exécution de la requête
+        # Création de la feuille de résumé des IoCs
+        if ($excelCreated) {
+            Write-Host "`nCréation de la feuille de résumé des IoCs..."
+
             try {
-                $query = # ... votre code de génération de requête existant ...
-                Write-Host "Exécution de la requête pour $originalName..."
-                $results = Invoke-DefenderQuery -Query $query -Token $token -FamilyName $originalName
-                
-                # Préparation des données de résumé
-                $summaryEntry = [PSCustomObject]@{
-                    'Famille' = $originalName
-                    'Nombre de détections' = 0
-                    'SHA256 uniques' = $hashesByFamily[$safeName].SHA256.Count
-                    'SHA1 uniques' = $hashesByFamily[$safeName].SHA1.Count
-                    'MD5 uniques' = $hashesByFamily[$safeName].MD5.Count
-                    'Date analyse' = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-                }
-                
-                if ($results -and $results.Count -gt 0) {
-                    # Création du fichier Excel si c'est la première fois qu'on trouve des résultats
-                    if (-not $excelCreated) {
-                        $excel = Open-ExcelPackage -Path $excelPath -Create
-                        $excelCreated = $true
-                    }
-                    
+                # Importer à nouveau le CSV source pour créer le résumé
+                $iocsSummary = @()
+                $iocsSource = Import-Csv $IocsFile
+
+                foreach ($ioc in $iocsSource) {
+                    # Parser les hashes
+                    $sha256 = ""
+                    $sha1 = ""
+                    $md5 = ""
+
                     try {
-                        # Préparation du nom de feuille
-                        $worksheetName = if ($safeName.Length -gt 31) {
-                            $safeName.Substring(0, 28) + "..."
-                        } else {
-                            $safeName
+                        $hashesJson = $ioc.FileHashes.Trim()
+                        if ($hashesJson -match '^\{.*\}$') {
+                            $hashes = $hashesJson | ConvertFrom-Json -ErrorAction SilentlyContinue
+                            $sha256 = if ($hashes.sha256) { $hashes.sha256 } else { "" }
+                            $sha1 = if ($hashes.sha1) { $hashes.sha1 } else { "" }
+                            $md5 = if ($hashes.md5) { $hashes.md5 } else { "" }
                         }
-                        
-                        # Export des résultats
-                        $results | Export-Excel -ExcelPackage $excel -WorksheetName $worksheetName `
-                                 -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow
-                        
-                        # Application du formatage conditionnel
-                        $ws = $excel.Workbook.Worksheets[$worksheetName]
-                        if ($ws) {
-                            Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText `
-                                                    -ConditionValue "File" -BackgroundColor LightBlue -Column 3
-                            Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText `
-                                                    -ConditionValue "Process" -BackgroundColor LightGreen -Column 3
-                            Add-ConditionalFormatting -WorkSheet $ws -RuleType ContainsText `
-                                                    -ConditionValue "Network" -BackgroundColor LightYellow -Column 3
-                        }
-                        
-                        $summaryEntry.'Nombre de détections' = $results.Count
-                        Write-Host "  $($results.Count) détections trouvées"
                     }
                     catch {
-                        Write-Warning "Erreur lors de l'export des résultats pour $originalName : $_"
+                        # Ignorer les erreurs de parsing
                     }
-                } else {
-                    Write-Host "  Aucune détection trouvée"
+
+                    # Vérifier si ce hash a été détecté
+                    $detected = $false
+                    $detectionCount = 0
+                    $affectedMachines = ""
+
+                    if ($sha256 -and $detectionResults.ContainsKey($sha256)) {
+                        $detected = $true
+                        $detectionCount = $detectionResults[$sha256].Count
+                        $affectedMachines = ($detectionResults[$sha256].Machines | Sort-Object) -join '; '
+                    }
+
+                    $summaryObj = [PSCustomObject]@{
+                        'Famille' = if ($ioc.FamilyName) { $ioc.FamilyName } else { "Unknown" }
+                        'Chemin Fichier' = if ($ioc.FullPath) { $ioc.FullPath } else { "N/A" }
+                        'SHA256' = $sha256
+                        'SHA1' = $sha1
+                        'MD5' = $md5
+                        'Statut' = if ($detected) { "DETECTE" } else { "Non detecte" }
+                        'Detections' = $detectionCount
+                        'Machines Affectees' = $affectedMachines
+                    }
+
+                    $iocsSummary += $summaryObj
                 }
-                
-                [void]$summaryResults.Add($summaryEntry)
+
+                # Exporter le resume comme premiere feuille
+                $iocsSummary | Export-Excel -Path $excelPath -WorksheetName "0_Resume_IoCs" -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow -MoveToStart
+
+                Write-Host "Feuille de resume creee avec succes ($($iocsSummary.Count) IoCs)"
+
+                # Statistiques du resume
+                $detectedItems = @($iocsSummary | Where-Object { $_.Statut -eq "DETECTE" })
+                $notDetectedItems = @($iocsSummary | Where-Object { $_.Statut -eq "Non detecte" })
+                $detected = $detectedItems.Count
+                $notDetected = $notDetectedItems.Count
+                Write-Host "  - IoCs detectes : $detected" -ForegroundColor $(if ($detected -gt 0) { "Red" } else { "Gray" })
+                Write-Host "  - IoCs non detectes : $notDetected" -ForegroundColor Green
             }
             catch {
-                Write-Warning "Erreur lors du traitement de $originalName : $_"
-                continue
+                Write-Warning "Erreur lors de la création de la feuille de résumé : $_"
             }
         }
-        
-        # Création de la feuille de résumé seulement si des résultats ont été trouvés
+
+        # Finalisation
         if ($excelCreated) {
-            try {
-                $summaryResults | Export-Excel -ExcelPackage $excel -WorksheetName 'Résumé' `
-                                -AutoSize -AutoFilter -FreezeTopRow -BoldTopRow
-                Write-Host "`nFeuille de résumé créée avec succès"
-                
-                # Sauvegarde et fermeture du fichier Excel
-                Close-ExcelPackage $excel -Show
-                Write-Host "Rapport Excel généré : $excelPath"
-            }
-            catch {
-                Write-Warning "Erreur lors de la finalisation du fichier Excel : $_"
-            }
-        } else {
-            Write-Host "`nAucune détection trouvée pour toutes les familles - Pas de fichier Excel généré"
+            Write-Host "`nRapport Excel généré : $excelPath"
+            Write-Host "Vous pouvez ouvrir le fichier pour voir les détections."
+        }
+        else {
+            Write-Host "`nAucune détection trouvée - Aucun fichier Excel généré"
         }
     }
     catch {

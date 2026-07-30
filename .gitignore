@@ -13,3 +13,9 @@ scan_results_*.csv
 # Archives & backups
 *.zip
 *.backup
+
+# Proprietary algorithms (if any)
+*.algorithm
+
+# Sensitive business logic
+*/Proprietary/*
