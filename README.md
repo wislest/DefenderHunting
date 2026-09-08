@@ -1,4 +1,4 @@
-# 🛡️ DefenderHunter
+# 🛡️ DefenderHunting
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=powershell&logoColor=white)
 ![KQL](https://img.shields.io/badge/KQL-Advanced%20Hunting-0078D4)
@@ -10,6 +10,25 @@
 
 > **Detection-as-Code threat-hunting framework for Microsoft Defender XDR & Sentinel.**
 > Automates IOC enrichment and Advanced Hunting across endpoints, with **22 ransomware-family KQL query packs** mapped to MITRE ATT&CK.
+
+---
+
+## 📊 Production use
+
+This is not a lab project. The framework was built for, and operated in, a
+**7,000+ endpoint enterprise estate**, where the detection-as-code workflow it
+implements produced:
+
+| Outcome | Result |
+|---|---|
+| Investigation time | **−75 %** |
+| Mean time to detect (MTTD) | **−60 %** |
+| Ransomware families with curated, ATT&CK-mapped KQL packs | **22** |
+
+The first two figures describe production operation of this framework in one
+enterprise environment. They are outcomes of the workflow in that estate — not
+benchmarks reproducible against arbitrary data. The third is verifiable in
+[`Queries/`](Queries/).
 
 ---
 
