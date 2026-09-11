@@ -13,22 +13,20 @@
 
 ---
 
-## 📊 Production use
+## 📊 What this repository contains
 
-This is not a lab project. The framework was built for, and operated in, a
-**7,000+ endpoint enterprise estate**, where the detection-as-code workflow it
-implements produced:
+Everything below is verifiable in the repository itself.
 
-| Outcome | Result |
+| Component | Detail |
 |---|---|
-| Investigation time | **−75 %** |
-| Mean time to detect (MTTD) | **−60 %** |
-| Ransomware families with curated, ATT&CK-mapped KQL packs | **22** |
+| Ransomware-family KQL packs, ATT&CK-mapped | **22** (see [`Queries/`](Queries/)) |
+| PowerShell module | Export core, query library, IOC hunter (`Modules/DefenderHunter/`) |
+| IOC ingestion | CSV / JSON, automatic hash-type detection (MD5 / SHA1 / SHA256) |
+| Target platforms | Microsoft Defender XDR Advanced Hunting API, Microsoft Sentinel |
 
-The first two figures describe production operation of this framework in one
-enterprise environment. They are outcomes of the workflow in that estate — not
-benchmarks reproducible against arbitrary data. The third is verifiable in
-[`Queries/`](Queries/).
+The query packs target the documented Defender Advanced Hunting schema and
+publicly reported ATT&CK techniques. They carry no environment-specific tuning,
+asset naming, or baselines: tune them against your own estate before use.
 
 ---
 
